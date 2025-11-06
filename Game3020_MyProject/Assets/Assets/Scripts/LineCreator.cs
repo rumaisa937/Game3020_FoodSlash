@@ -82,6 +82,12 @@ public class LineCreator : MonoBehaviour {
 		if (target.gameObject.tag == "Bomb") {
 			GameObject b = Instantiate (blast, target.transform.position, Quaternion.identity) as GameObject;
 			Destroy (b.gameObject, 2f);
+
+			// Notify the gameplay controller that a life should be lost
+			if (GameplayController.instance != null) {
+				GameplayController.instance.DecreaseLife();
+			}
+
 			Destroy (target.gameObject);
 		}
 
@@ -90,7 +96,7 @@ public class LineCreator : MonoBehaviour {
 			Destroy (s.gameObject, 2f);
 			Destroy (target.gameObject);
 
-			int rand = Random.Range (100, 150);
+			int rand = 100;
 			GameplayController.instance.playerScore += rand;
 		}
 	}
