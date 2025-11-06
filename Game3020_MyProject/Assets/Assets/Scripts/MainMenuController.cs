@@ -9,11 +9,17 @@ public class MainMenuController : MonoBehaviour {
 	{
 		SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
 	}
-	
+
+		public void RestartGame()
+	{
+		SceneManager.LoadScene("MainMenu");
+	}
+
 	public void QuitGame()
 	{
 		Debug.Log("Quit!");
 		Application.Quit();
 	}
+	
 
 } // MainMenuController
