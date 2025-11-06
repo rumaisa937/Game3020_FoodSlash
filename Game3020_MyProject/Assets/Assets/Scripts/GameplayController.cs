@@ -9,12 +9,14 @@ public class GameplayController : MonoBehaviour {
 
 	public static GameplayController instance;
 
-	public Text countDownText, scoreText, livesText;
+	public Text countDownText, scoreText, livesText, timerText;
 	public float countDownTimer = 3.0f;
 	public bool hasLevelStarted;
 
 	public int playerScore;
 	private int playerLives = 5;
+	private float gameTimer = 0f;
+	private bool isGameOver = false;
 
 	void Awake () {
 		CreateInstance ();
@@ -47,12 +49,27 @@ public class GameplayController : MonoBehaviour {
 		if (livesText != null) {
 			livesText.text = playerLives.ToString ();
 		}
+
+		// Initialize timer
+		gameTimer = 0f;
+		isGameOver = false;
+		if (timerText != null) {
+			timerText.text = "00:00";
+		}
 	}
 
 	void UpdateGameplayController () {
 		scoreText.text = "" + playerScore;
 		if (hasLevelStarted) {
 			CountDownAndBeginLevel ();
+		} else if (!isGameOver && Time.timeScale > 0) {
+			// Update timer when game is running and not over
+			gameTimer += Time.deltaTime;
+			if (timerText != null) {
+				int minutes = Mathf.FloorToInt(gameTimer / 60f);
+				int seconds = Mathf.FloorToInt(gameTimer % 60f);
+				timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+			}
 		}
 	}
 
@@ -75,6 +92,7 @@ public class GameplayController : MonoBehaviour {
 		}
 
 		if (playerLives <= 0) {
+			isGameOver = true; // Stop the timer
 			// Load GameOver scene (scene must be added to build settings with this exact name)
 			SceneManager.LoadScene("GameOver");
 		}
