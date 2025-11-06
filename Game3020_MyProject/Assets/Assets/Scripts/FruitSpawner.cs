@@ -6,7 +6,9 @@ public class FruitSpawner : MonoBehaviour {
 
 	public GameObject fruit;
 	public GameObject bomb;
-	public float maxX;
+	public float maxX = 8f;
+	public float maxY = 5f;  // Maximum Y position for side spawns
+	public float minY = -3f; // Minimum Y position for side spawns
 
 	void Start () {
 		Invoke ("StartSpawning", 1f);
@@ -33,24 +35,54 @@ public class FruitSpawner : MonoBehaviour {
 		}
 	}
 
+	Vector3 GetRandomSpawnPosition() {
+		// Choose a random side (0: bottom, 1: left, 2: right, 3: top)
+		int side = Random.Range(0, 4);
+		Vector3 pos = Vector3.zero;
+
+		switch (side) {
+			case 0: // Bottom
+				pos = new Vector3(Random.Range(-maxX, maxX), -maxY, 0);
+				break;
+			case 1: // Left
+				pos = new Vector3(-maxX, Random.Range(minY, maxY), 0);
+				break;
+			case 2: // Right
+				pos = new Vector3(maxX, Random.Range(minY, maxY), 0);
+				break;
+			case 3: // Top
+				pos = new Vector3(Random.Range(-maxX, maxX), maxY, 0);
+				break;
+		}
+		return pos;
+	}
+
+	Vector2 GetForceForPosition(Vector3 spawnPos) {
+		// Calculate force direction towards center with some randomness
+		Vector2 directionToCenter = new Vector2(-spawnPos.x * 0.5f, -spawnPos.y * 0.5f);
+		return directionToCenter.normalized * 15f;
+	}
+
 	IEnumerator SpawnFruit () {
 		for (int i = 0; i < 5; i++) {
-			float rand = Random.Range (-maxX, maxX);
-			Vector3 pos = new Vector3 (rand, transform.position.y, 0);
-			GameObject f = Instantiate (fruit, pos, Quaternion.identity) as GameObject;
-			f.GetComponent<Rigidbody2D> ().AddForce (new Vector2 (0, 15f), ForceMode2D.Impulse);
-			f.GetComponent<Rigidbody2D> ().AddTorque (Random.Range (-20f, 20f));
+			Vector3 spawnPos = GetRandomSpawnPosition();
+			GameObject f = Instantiate(fruit, spawnPos, Quaternion.identity) as GameObject;
+			
+			Vector2 force = GetForceForPosition(spawnPos);
+			f.GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Impulse);
+			f.GetComponent<Rigidbody2D>().AddTorque(Random.Range(-20f, 20f));
 
-			yield return new WaitForSeconds (0.5f);
+			yield return new WaitForSeconds(0.5f);
 		}
 	}
 
 	void SpawnBomb () {
-		float rand = Random.Range (-maxX, maxX);
-		Vector3 pos = new Vector3 (rand, transform.position.y, 0);
-		GameObject b = Instantiate (bomb, pos, Quaternion.identity) as GameObject;
-		b.GetComponent<Rigidbody2D> ().AddForce (new Vector2 (0, 15f), ForceMode2D.Impulse);
-		b.GetComponent<Rigidbody2D> ().AddTorque (Random.Range (-50f, 50f));
+		Vector3 spawnPos = GetRandomSpawnPosition();
+		GameObject b = Instantiate(bomb, spawnPos, Quaternion.identity) as GameObject;
+		
+		Vector2 force = GetForceForPosition(spawnPos);
+		b.GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Impulse);
+		b.GetComponent<Rigidbody2D>().AddTorque(Random.Range(-50f, 50f));
 	}
 
 } // FruitSpawner
