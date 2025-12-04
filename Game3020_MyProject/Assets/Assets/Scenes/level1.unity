@@ -1594,7 +1594,7 @@ BoxCollider2D:
   m_ExcludeLayers:
     serializedVersion: 2
     m_Bits: 0
-  m_LayerOverridePriority: 0
+  m_LayerOverridePriority: -1
   m_ForceSendLayers:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -2261,7 +2261,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   fruit: {fileID: 1272290560667824, guid: 4ee5fb888739b504683c5fd0db504be5, type: 3}
   bomb: {fileID: 1971608638913920, guid: eff2d2abee95997469c6cb0050b65d93, type: 3}
-  bombsPerGroup: 4
+  bombsPerGroup: 2
   maxBombsPerGroup: 20
   maxX: 7
   maxY: 5
