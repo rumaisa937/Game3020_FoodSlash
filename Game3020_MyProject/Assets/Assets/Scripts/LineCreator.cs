@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,12 +12,17 @@ public class LineCreator : MonoBehaviour {
 
 	public GameObject splash;
 
+	GameplayController gc;
+
+	// Track objects already processed by this line to avoid double-counting collisions
+	private System.Collections.Generic.HashSet<int> processedObjects = new System.Collections.Generic.HashSet<int>();
+
 	void Awake () {
 		line = GetComponent<LineRenderer> ();
 	}
 
 	void Start () {
-		
+		gc = FindFirstObjectByType<GameplayController>();
 	}
 
 	void Update () {
@@ -25,6 +30,10 @@ public class LineCreator : MonoBehaviour {
 		if (Application.platform == RuntimePlatform.Android) {
 			if (Input.touchCount > 0) {
 				// Gets only the first touch (No multi-touch)
+				if (Input.GetTouch (0).phase == TouchPhase.Began) {
+					// New touch/slice started - allow processing of objects again
+					processedObjects.Clear();
+				}
 				if (Input.GetTouch (0).phase == TouchPhase.Moved) {
 					line.positionCount = vertexCount + 1;
 					Vector3 mousePos = Camera.main.ScreenToWorldPoint (Input.mousePosition);
@@ -44,6 +53,8 @@ public class LineCreator : MonoBehaviour {
 					foreach (BoxCollider2D box in colliders) {
 						Destroy (box);
 					}
+					// Clear processed IDs so future slices can process new objects
+					processedObjects.Clear();
 				}
 			}
 
@@ -52,6 +63,8 @@ public class LineCreator : MonoBehaviour {
 
 			if (Input.GetMouseButtonDown (0)) {
 				mouseDown = true;
+				// New slice started with mouse - allow processing of objects again
+				processedObjects.Clear();
 			}
 
 			if (mouseDown) {
@@ -74,18 +87,26 @@ public class LineCreator : MonoBehaviour {
 				foreach (BoxCollider2D box in colliders) {
 					Destroy (box);
 				}
+				// Clear processed IDs so future slices can process new objects
+				processedObjects.Clear();
 			}
 		}
 	} // Update
 
 	void OnCollisionEnter2D (Collision2D target) {
+		int objId = target.gameObject.GetInstanceID();
+		if (processedObjects.Contains(objId)) {
+			return;
+		}
+		processedObjects.Add(objId);
 		if (target.gameObject.tag == "Bomb") {
 			GameObject b = Instantiate (blast, target.transform.position, Quaternion.identity) as GameObject;
 			Destroy (b.gameObject, 2f);
-
-			// Notify the gameplay controller that a life should be lost
-			if (GameplayController.instance != null) {
-				GameplayController.instance.DecreaseLife();
+ 
+			// Notify the gameplay controller that a life should be lost (only once per bomb)
+			if (gc != null)
+			{
+				gc.DecreaseLife();
 			}
 
 			Destroy (target.gameObject);
@@ -97,7 +118,11 @@ public class LineCreator : MonoBehaviour {
 			Destroy (target.gameObject);
 
 			int rand = 100;
-			GameplayController.instance.playerScore += rand;
+			if (gc != null) {
+				gc.playerScore += rand;
+			} else {
+				Debug.LogWarning("LineCreator: GameplayController reference not found; score not updated.");
+			}
 		}
 	}
 

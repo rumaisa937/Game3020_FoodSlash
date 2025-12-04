@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,7 +7,7 @@ using UnityEngine.SceneManagement;
 
 public class GameplayController : MonoBehaviour {
 
-	public static GameplayController instance;
+	// (singleton removed) GameplayController is used via references, not a static instance
 
 	public Text countDownText, scoreText, livesText, timerText;
 	public float countDownTimer = 3.0f;
@@ -19,11 +19,18 @@ public class GameplayController : MonoBehaviour {
 	private bool isGameOver = false;
 
 	void Awake () {
-		CreateInstance ();
+		// No singleton creation here. Use FindObjectOfType or dependency injection to get a reference.
 	}
 
-	void Start () {
-		InitializeGameplayController ();
+	void OnSceneLoadedCallback(Scene scene, LoadSceneMode mode) {
+		if (scene.name == "level1")
+		{
+			InitializeGameplayController();
+			hasLevelStarted = true;
+		}
+	}
+	void Start() {
+		InitializeGameplayController();
 		hasLevelStarted = true;
 	}
 
@@ -31,23 +38,29 @@ public class GameplayController : MonoBehaviour {
 		UpdateGameplayController ();
 	}
 
-	void CreateInstance () {
-		if (instance == null) {
-			instance = this;
-		}
-	}
+	// Singleton pattern intentionally removed to avoid global state.
 
 	void InitializeGameplayController () {
 		Time.timeScale = 0;
-		countDownText.text = countDownTimer.ToString ("F0");
+		if (countDownText != null) {
+			countDownText.text = countDownTimer.ToString ("F0");
+		} else {
+			Debug.LogWarning("GameplayController: 'countDownText' is not assigned in the inspector.");
+		}
 
 		playerScore = 0;
-		scoreText.text = "" + playerScore;
+		if (scoreText != null) {
+			scoreText.text = "" + playerScore;
+		} else {
+			Debug.LogWarning("GameplayController: 'scoreText' is not assigned in the inspector.");
+		}
 
 		// Initialize lives
 		playerLives = 5;
 		if (livesText != null) {
 			livesText.text = playerLives.ToString ();
+		} else {
+			Debug.LogWarning("GameplayController: 'livesText' is not assigned in the inspector.");
 		}
 
 		// Initialize timer
@@ -55,11 +68,15 @@ public class GameplayController : MonoBehaviour {
 		isGameOver = false;
 		if (timerText != null) {
 			timerText.text = "00:00";
+		} else {
+			Debug.LogWarning("GameplayController: 'timerText' is not assigned in the inspector.");
 		}
 	}
 
 	void UpdateGameplayController () {
-		scoreText.text = "" + playerScore;
+		if (scoreText != null) {
+			scoreText.text = "" + playerScore;
+		}
 		if (hasLevelStarted) {
 			CountDownAndBeginLevel ();
 		} else if (!isGameOver && Time.timeScale > 0) {
@@ -75,12 +92,16 @@ public class GameplayController : MonoBehaviour {
 
 	void CountDownAndBeginLevel () {
 		countDownTimer -= (0.19f * 0.15f);
-		countDownText.text = countDownTimer.ToString ("F0");
+		if (countDownText != null) {
+			countDownText.text = countDownTimer.ToString ("F0");
+		}
 
 		if (countDownTimer <= 0) {
 			Time.timeScale = 1;
 			hasLevelStarted = false;
-			countDownText.gameObject.SetActive (false);
+			if (countDownText != null && countDownText.gameObject != null) {
+				countDownText.gameObject.SetActive (false);
+			}
 		}
 	}
 
