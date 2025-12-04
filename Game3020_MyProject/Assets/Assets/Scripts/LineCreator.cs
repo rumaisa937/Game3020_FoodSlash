@@ -12,6 +12,8 @@ public class LineCreator : MonoBehaviour {
 
 	public GameObject splash;
 
+	public AudioClip explosionSound;
+
 	GameplayController gc;
 
 	// Track objects already processed by this line to avoid double-counting collisions
@@ -99,17 +101,20 @@ public class LineCreator : MonoBehaviour {
 			return;
 		}
 		processedObjects.Add(objId);
-		if (target.gameObject.tag == "Bomb") {
-			GameObject b = Instantiate (blast, target.transform.position, Quaternion.identity) as GameObject;
-			Destroy (b.gameObject, 2f);
- 
-			// Notify the gameplay controller that a life should be lost (only once per bomb)
-			if (gc != null)
-			{
-				gc.DecreaseLife();
-			}
+	if (target.gameObject.tag == "Bomb") {
+		GameObject b = Instantiate (blast, target.transform.position, Quaternion.identity) as GameObject;
+		Destroy (b.gameObject, 2f);
 
-			// Increase bombs-per-group so the game gets harder when bombs are destroyed
+		// Play explosion sound at bomb position
+		if (explosionSound != null) {
+			AudioSource.PlayClipAtPoint(explosionSound, target.transform.position);
+		}
+
+		// Notify the gameplay controller that a life should be lost (only once per bomb)
+		if (gc != null)
+		{
+			gc.DecreaseLife();
+		}			// Increase bombs-per-group so the game gets harder when bombs are destroyed
 			FruitSpawner fs = FindFirstObjectByType<FruitSpawner>();
 			if (fs != null) {
 				fs.IncrementBombsPerGroup(1);
