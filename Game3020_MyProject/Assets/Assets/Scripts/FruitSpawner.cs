@@ -6,6 +6,10 @@ public class FruitSpawner : MonoBehaviour {
 
 	public GameObject fruit;
 	public GameObject bomb;
+	// How many bombs to spawn when a bomb spawn event occurs. Increases when bombs are destroyed.
+	public int bombsPerGroup = 4;
+	// Optional cap to avoid runaway spawns
+	public int maxBombsPerGroup = 30;
 	public float maxX = 8f;
 	public float maxY = 5f;  // Maximum Y position for side spawns
 	public float minY = -3f; // Minimum Y position for side spawns
@@ -31,7 +35,10 @@ public class FruitSpawner : MonoBehaviour {
 		StartCoroutine ("SpawnFruit");
 
 		if (Random.Range (0, 6) > 2) {
-			SpawnBomb ();
+			// Spawn 'bombsPerGroup' bombs to increase difficulty as bombs get destroyed
+			for (int i = 0; i < bombsPerGroup; i++) {
+				SpawnBomb ();
+			}
 		}
 	}
 
@@ -83,6 +90,14 @@ public class FruitSpawner : MonoBehaviour {
 		Vector2 force = GetForceForPosition(spawnPos);
 		b.GetComponent<Rigidbody2D>().AddForce(force, ForceMode2D.Impulse);
 		b.GetComponent<Rigidbody2D>().AddTorque(Random.Range(-50f, 50f));
+	}
+
+	/// <summary>
+	/// Increase how many bombs spawn per spawn event. Clamped by maxBombsPerGroup.
+	/// </summary>
+	public void IncrementBombsPerGroup(int amount = 1) {
+		bombsPerGroup = Mathf.Clamp(bombsPerGroup + amount, 1, maxBombsPerGroup);
+		Debug.Log($"FruitSpawner: bombsPerGroup increased to {bombsPerGroup}");
 	}
 
 } // FruitSpawner

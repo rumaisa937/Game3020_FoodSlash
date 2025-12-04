@@ -109,6 +109,14 @@ public class LineCreator : MonoBehaviour {
 				gc.DecreaseLife();
 			}
 
+			// Increase bombs-per-group so the game gets harder when bombs are destroyed
+			FruitSpawner fs = FindFirstObjectByType<FruitSpawner>();
+			if (fs != null) {
+				fs.IncrementBombsPerGroup(1);
+			} else {
+				Debug.LogWarning("LineCreator: FruitSpawner not found; cannot increase bomb spawn count.");
+			}
+
 			Destroy (target.gameObject);
 		}
 
